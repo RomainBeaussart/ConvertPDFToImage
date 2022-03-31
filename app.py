@@ -1,24 +1,28 @@
 from pdf2image import convert_from_path
 import os
 import tempfile
-from pdf2image import convert_from_path
 from PIL import Image
+from docx2pdf import convert
 
-def convert (inDir, outDir):
+def converts (inDir, outDir):
     if not os.path.exists(outDir):
         os.makedirs(outDir)
 
     for file in os.listdir(inDir):
-        convertPdf(inDir + file, outDir, file)
+        extention = (file.split(".")[-1]).upper()
+        if extention == 'PDF':
+            convertPdf(inDir + file, outDir, file)
+        elif extention == 'DOCX':
+            convertToPDF(inDir + file, outDir, file)
 
 
-def convertPdf(filePath, outDir, fileName):
+def convertPdf (filePath, outDir, fileName):
     with tempfile.TemporaryDirectory() as tempDir:
         images = convert_from_path(filePath, output_folder=tempDir)
         tempImages = []
         for i in range(len(images)):
-            imagePath = f'{tempDir}/{i}.jpg'
-            images[i].save(imagePath, 'JPEG')
+            imagePath = f'{tempDir}/{i}.png'
+            images[i].save(imagePath, 'PNG')
             tempImages.append(imagePath)
 
         imgs = list(map(Image.open, tempImages))
@@ -34,12 +38,21 @@ def convertPdf(filePath, outDir, fileName):
         mergedImage.paste(img, (0, y))
         y += img.height
 
-    mergedImage.save(f'{outDir}{fileName}.jpg')
+    mergedImage.save(f'{outDir}{fileName}.png')
 
     return outDir
 
+def convertToPDF(filePath, outDir, fileName):
+    # outFileName=fileName.replace("docx","pdf")
+    inputFile = "./src/docxToPDF.docx"
+    outputFile = "./result/docxToPDF.pdf"
+    file = open(outputFile, "w")
+    file.close()
 
-outDir = "./imgs/"
-inDir = "./pdfs/"
+    convert(inputFile, outputFile)
+    # convert('./src/docxToPDF.docx', './result/docxToPDF.pdf')
 
-convert(inDir, outDir)
+outDir = "./result/"
+inDir = "./src/"
+
+converts(inDir, outDir)
